@@ -4,108 +4,167 @@
   <meta charset="UTF-8">  
   <title>Number Grid with Save Feature</title>  
   <link rel="manifest" href="manifest.json">  
-  <style>  
-      body {  
-          font-family: Arial, sans-serif;  
-          text-align: center;  
-          margin: 20px;  
-      }  
-      table {  
-          width: 90%;  
-          margin: 20px auto;  
-          border-collapse: collapse;  
-          border: 2px solid black;  
-      }  
-      td, th {  
-          border: 2px solid black;  
-          width: 100px;  
-          text-align: center;  
-          vertical-align: middle;  
-          position: relative;  
-          overflow: hidden;  
-      }  
-      textarea {  
-          width: 100px;  
-          height: 50px;  
-          text-align: center;  
-          border: none;  
-          font-size: 16px;  
-          background: transparent;  
-          resize: both;  
-          overflow: auto;  
-          padding: 5px;  
-          font-family: Arial, sans-serif;  
-      }  
-      textarea:focus {  
-          outline: none;  
-      }  
-      .total-row {  
-          font-weight: bold;  
-          background-color: #f0f0f0;  
-          height: 40px;  
-      }  
-      .static-box {  
-          background-color: #ddd;  
-          font-weight: bold;  
-      }  
-      .pagination {  
-          margin-top: 20px;  
-      }  
-      .pagination button {  
-          padding: 10px 20px;  
-          font-size: 16px;  
-          margin: 5px;  
-      }  
-      .search-box {  
-          margin: 10px;  
-      }  
-      .save-btn, .clear-btn {  
-          margin-top: 10px;  
-          padding: 10px 20px;  
-          font-size: 16px;  
-          color: white;  
-          border: none;  
-          cursor: pointer;  
-      }  
-      .save-btn {  
-          background-color: green;  
-      }  
-      .clear-btn {  
-          background-color: red;  
-      }  
-      .note-section {  
-          margin-top: 20px;  
-      }  
-      .note-box {  
-          width: 90%;  
-          height: 80px;  
-          margin: 10px auto;  
-          border: 2px solid black;  
-          padding: 10px;  
-          font-size: 16px;  
-          font-family: Arial, sans-serif;  
-          background-color: transparent;  
-      }  
-      #folderTotalsSummary {  
-          margin-top: 30px;  
-          padding: 10px;  
-          border: 2px solid #000;  
-          width: 90%;  
-          margin-left: auto;  
-          margin-right: auto;
-          resize: both;
-          overflow: auto;
-      }  
-      #folderSummaryContent {  
-          text-align: left;  
-          padding-left: 10px;  
-      }  
-      
-      select {
-  padding: 10px;
-  font-size: 16px;
-}
-  </style>  
+  <<style>  
+    :root {
+        --primary-color: #4a90e2;
+        --secondary-color: #f4f7f6;
+        --success-color: #2ecc71;
+        --danger-color: #e74c3c;
+        --text-color: #2c3e50;
+        --border-color: #d1d8e0;
+    }
+
+    body {  
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+        text-align: center;  
+        margin: 0;
+        padding: 15px;
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+    }  
+
+    h2 {
+        color: var(--text-color);
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    /* Container for table to allow horizontal scroll on mobile */
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        margin: 20px 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    table {  
+        width: 100%;  
+        border-collapse: collapse;  
+        min-width: 600px; /* Ensures it doesn't squash too much */
+    }  
+
+    th {  
+        background-color: #34495e;
+        color: white;
+        padding: 12px 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }  
+
+    td {  
+        border: 1px solid var(--border-color);  
+        padding: 5px;
+        vertical-align: middle;
+    }  
+
+    textarea {  
+        width: 100px; /* Shuruati chauRai */
+        height: 50px; /* Shuruati lambai */
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 15px;
+        text-align: center;
+        background-color: #f9f9f9;
+        resize: both !important; /* Dono taraf se khinchne wala handle */
+        overflow: auto !important; /* Scrollbar agar zaroorat ho */
+        box-sizing: border-box;
+        display: block;
+    }
+
+    textarea:focus {  
+        outline: none;
+        background-color: white;
+        border-color: var(--primary-color);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }  
+
+    .total-row {  
+        font-weight: bold;  
+        background-color: #ecf0f1;  
+    }  
+
+    .static-box {  
+        background-color: #dcdde1;  
+        font-weight: bold;  
+    }  
+
+    /* Buttons Style */
+    button {
+        border-radius: 6px;
+        font-weight: 600;
+        transition: transform 0.1s, opacity 0.2s;
+        cursor: pointer;
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        font-size: 14px;
+    }
+
+    button:active {
+        transform: scale(0.96);
+    }
+
+    .save-btn { background-color: var(--success-color); color: white; box-shadow: 0 3px 0 #27ae60; }
+    .clear-btn { background-color: var(--danger-color); color: white; box-shadow: 0 3px 0 #c0392b; }
+    
+    #undoBtn { background-color: #f39c12; color: white; box-shadow: 0 3px 0 #e67e22; }
+    #undoBtn:disabled { background-color: #bdc3c7; box-shadow: none; cursor: not-allowed; }
+
+    .pagination { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .pagination button { background-color: #34495e; color: white; }
+
+    /* Inputs & Selects */
+    select, input[type="number"], input[type="date"] {
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 15px;
+        outline: none;
+    }
+
+    .search-box { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    .note-box {  
+        width: 100%;  
+        height: 100px !important;  
+        margin: 10px 0;  
+        border: 1px solid var(--border-color);  
+        background-color: white;
+        resize: vertical;
+        text-align: left;
+    }  
+
+    #folderTotalsSummary {  
+        margin-top: 30px;  
+        padding: 20px;  
+        border: none;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        width: 100%;
+        box-sizing: border-box;
+    }  
+
+    #folderSummaryContent div {
+        padding: 8px;
+        border-bottom: 1px solid #f1f1f1;
+        font-size: 14px;
+    }
+
+    .bonus-section {
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+</style>
 </head>  
 <body>  <h2>Number Grid with Save Feature</h2>  <div>  
     <label>Select Folder:</label>  
@@ -217,11 +276,9 @@
             let textarea = document.createElement("textarea");  
             textarea.dataset.column = j;  
   
-            textarea.oninput = function () {  
-                this.style.height = "auto";  
-                this.style.height = (this.scrollHeight) + "px";  
-                calculateTotal();  
-            };  
+            textarea.oninput = function() {
+    calculateTotal(); // Ab sirf total hoga, size aap khud khinchenge
+};  
   
             cell.appendChild(textarea);  
             row.appendChild(cell);  
@@ -301,43 +358,43 @@
         }  
     }  
   
-    function saveData() {  
-        let pageData = {  
-            date: document.getElementById("dateInput").value,  
-            values: [],  
-            sizes: [],  
-            note: document.getElementById("note").value,
-            sundays: parseInt(document.getElementById("sundayCount").value) || 0
-        };  
+    function saveData() {
+    let pageData = {
+        date: document.getElementById("dateInput").value,
+        values: [],
+        sizes: [], // Naya: Width aur Height save karne ke liye
+        note: document.getElementById("note").value,
+        sundays: parseInt(document.getElementById("sundayCount").value) || 0
+    };
+    let textareas = document.querySelectorAll("textarea[data-column]");
+    textareas.forEach(textarea => {
+        pageData.values.push(textarea.value);
+        // Size save kar rahe hain
+        pageData.sizes.push({ width: textarea.style.width, height: textarea.style.height });
+    });
+    localStorage.setItem(`${currentFolder}_pageData_${currentPage}`, JSON.stringify(pageData));
+    updateFolderSummary();
+} 
   
-        let textareas = document.querySelectorAll("textarea");  
-        textareas.forEach(textarea => {  
-            pageData.values.push(textarea.value);  
-            pageData.sizes.push({ width: textarea.style.width, height: textarea.style.height });  
-        });  
-  
-        localStorage.setItem(`${currentFolder}_pageData_${currentPage}`, JSON.stringify(pageData));  
-        updateFolderSummary();  
-    }  
-  
-    function loadData() {  
-        let savedData = localStorage.getItem(`${currentFolder}_pageData_${currentPage}`);  
-        if (savedData) {  
-            let pageData = JSON.parse(savedData);  
-            document.getElementById("dateInput").value = pageData.date || "";  
-            document.getElementById("note").value = pageData.note || "";  
-            document.getElementById("sundayCount").value = pageData.sundays || 0;
-  
-            let textareas = document.querySelectorAll("textarea");  
-            textareas.forEach((textarea, index) => {  
-                textarea.value = pageData.values[index] || "";  
-                textarea.style.width = pageData.sizes[index]?.width || "100px";  
-                textarea.style.height = pageData.sizes[index]?.height || "50px";  
-            });  
-  
-            calculateTotal();  
-        }  
-    }  
+    function loadData() {
+    let savedData = localStorage.getItem(`${currentFolder}_pageData_${currentPage}`);
+    if (savedData) {
+        let pageData = JSON.parse(savedData);
+        document.getElementById("dateInput").value = pageData.date || "";
+        document.getElementById("note").value = pageData.note || "";
+        document.getElementById("sundayCount").value = pageData.sundays || 0;
+        let textareas = document.querySelectorAll("textarea[data-column]");
+        textareas.forEach((textarea, index) => {
+            textarea.value = pageData.values[index] || "";
+            // Saved size load kar rahe hain
+            if (pageData.sizes && pageData.sizes[index]) {
+                textarea.style.width = pageData.sizes[index].width;
+                textarea.style.height = pageData.sizes[index].height;
+            }
+        });
+        calculateTotal();
+    }
+}
   
     function clearCurrentPage() {  
         lastClearedData = {  
@@ -457,7 +514,7 @@ if (pageData.date && pageData.sundays > 0) {
 }
 
 const div = document.createElement("div");
-div.textContent = `Page ${i} (${pageDate}): Stitch Total = ${stitchTotal}${sundayMark}${noteMark}`;
+div.innerHTML = `Page ${i} (${pageDate}): Stitch Total = <b>${stitchTotal.toLocaleString()}</b>${sundayMark}${noteMark}`;
 summaryDiv.appendChild(div);  
         }  
     }  
@@ -465,7 +522,8 @@ summaryDiv.appendChild(div);
     // 📌 Final grand total line  
     const grandTotalDiv = document.createElement("div");  
     grandTotalDiv.style.marginTop = "10px";  
-    grandTotalDiv.style.fontWeight = "bold";  
+    grandTotalDiv.style.fontWeight = "bold";
+    
     grandTotalDiv.style.borderTop = "2px solid #000";  
     grandTotalDiv.style.paddingTop = "8px";  
     grandTotalDiv.textContent = `📌 Total Stitch (Folder): ${grandTotal}`;  
@@ -494,10 +552,14 @@ let hazriBonus = hazriBonusEnabled ? 1000 : 0;
   
 const totalRs = Math.round(basicEarning + bonusEarning + tenMillionBonus + helperBonus + hazriBonus + sundayBonus);  
   
-const rupeeDiv = document.createElement("div");  
-rupeeDiv.style.fontWeight = "bold";  
-rupeeDiv.style.marginTop = "5px";  
-  
+const rupeeDiv = document.createElement("div");
+rupeeDiv.style.fontWeight = "900";
+rupeeDiv.style.color = "#000000";
+rupeeDiv.style.fontSize = "18px"; // Earning ko bara dikhane ke liye
+rupeeDiv.style.marginTop = "8px";
+rupeeDiv.style.padding = "5px";
+rupeeDiv.style.backgroundColor = "#e1f5fe"; // Light blue background taake saaf nazar aaye
+
 let bonusDetails = `Rs ${Math.round(basicEarning)} + Bonus Rs ${bonusEarning} for ${bonusPagesCount} page${bonusPagesCount > 1 ? 's' : ''} with ≥ 350,000 stitches`;  
   
 if (tenMillionBonus > 0) bonusDetails += ` + Rs 1000 for 10 million stitches`;  
@@ -538,4 +600,4 @@ summaryDiv.appendChild(rupeeDiv);
         });  
     }  
 </script>  </body>  
-  </html>
+</html>
