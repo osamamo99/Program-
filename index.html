@@ -63,19 +63,20 @@
     }  
 
     textarea {  
-        width: 100px; /* Shuruati chauRai */
-        height: 50px; /* Shuruati lambai */
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 15px;
-        text-align: center;
-        background-color: #f9f9f9;
-        resize: both !important; /* Dono taraf se khinchne wala handle */
-        overflow: auto !important; /* Scrollbar agar zaroorat ho */
-        box-sizing: border-box;
-        display: block;
-    }
+          width: 120px; 
+          min-height: 50px;
+          text-align: center;  
+          border: 1px solid #ddd;  
+          border-radius: 4px;
+          font-size: 16px;  
+          background: #f9f9f9;  
+          resize: both !important; /* Manual handle ke liye */
+          overflow: hidden; 
+          padding: 5px;  
+          display: block;
+          margin: auto;
+          box-sizing: border-box;
+      }
 
     textarea:focus {  
         outline: none;
@@ -271,18 +272,21 @@
     }
 };
   
-        for (let j = 0; j < cols; j++) {  
-            let cell = document.createElement("td");  
-            let textarea = document.createElement("textarea");  
-            textarea.dataset.column = j;  
-  
-            textarea.oninput = function() {
-    calculateTotal(); // Ab sirf total hoga, size aap khud khinchenge
-};  
-  
-            cell.appendChild(textarea);  
-            row.appendChild(cell);  
-        }  
+        for (let j = 0; j < cols; j++) {
+    let cell = document.createElement("td");
+    let textarea = document.createElement("textarea");
+    textarea.dataset.column = j;
+    
+    textarea.oninput = function() {
+        // AUTO HEIGHT: Likhne par box bada hoga
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+        calculateTotal();
+    };
+    
+    cell.appendChild(textarea);
+    row.appendChild(cell);
+}  
   
         grid.appendChild(row);  
         loadData();  
@@ -362,19 +366,18 @@
     let pageData = {
         date: document.getElementById("dateInput").value,
         values: [],
-        sizes: [], // Naya: Width aur Height save karne ke liye
+        sizes: [],
         note: document.getElementById("note").value,
         sundays: parseInt(document.getElementById("sundayCount").value) || 0
     };
-    let textareas = document.querySelectorAll("textarea[data-column]");
-    textareas.forEach(textarea => {
+    document.querySelectorAll("textarea[data-column]").forEach(textarea => {
         pageData.values.push(textarea.value);
-        // Size save kar rahe hain
-        pageData.sizes.push({ width: textarea.style.width, height: textarea.style.height });
+        // Manual set ki hui width aur height save kar rahe hain
+        pageData.sizes.push({ w: textarea.style.width, h: textarea.style.height });
     });
     localStorage.setItem(`${currentFolder}_pageData_${currentPage}`, JSON.stringify(pageData));
     updateFolderSummary();
-} 
+}
   
     function loadData() {
     let savedData = localStorage.getItem(`${currentFolder}_pageData_${currentPage}`);
@@ -386,10 +389,15 @@
         let textareas = document.querySelectorAll("textarea[data-column]");
         textareas.forEach((textarea, index) => {
             textarea.value = pageData.values[index] || "";
-            // Saved size load kar rahe hain
+            // Manual size load karna
             if (pageData.sizes && pageData.sizes[index]) {
-                textarea.style.width = pageData.sizes[index].width;
-                textarea.style.height = pageData.sizes[index].height;
+                if (pageData.sizes[index].w) textarea.style.width = pageData.sizes[index].w;
+                if (pageData.sizes[index].h) textarea.style.height = pageData.sizes[index].h;
+            }
+            // Agar manual height nahi hai to auto-expand content ke mutabiq
+            if (!textarea.style.height || textarea.style.height === "50px") {
+                textarea.style.height = "auto";
+                textarea.style.height = (textarea.scrollHeight) + "px";
             }
         });
         calculateTotal();
@@ -600,4 +608,4 @@ summaryDiv.appendChild(rupeeDiv);
         });  
     }  
 </script>  </body>  
-</html>
+  </html>
