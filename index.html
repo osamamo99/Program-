@@ -213,6 +213,14 @@
 <button class="clear-btn" onclick="clearCurrentPage()">Clear</button>
 <button class="clear-btn" id="undoBtn" onclick="undoClear()" disabled>Undo Clear</button>
 
+<!-- Export aur Import Buttons -->
+<div style="margin-top: 15px; padding: 10px; border: 1px dashed #4a90e2; border-radius: 8px; background: #fff;">
+    <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 14px; color: #34495e;">Data Backup Manager</p>
+    <button onclick="exportData()" style="background-color: #3498db; color: white;">📥 Export Data (Download)</button>
+    <button onclick="document.getElementById('importFile').click()" style="background-color: #9b59b6; color: white;">📤 Import Data (Upload)</button>
+    <input type="file" id="importFile" style="display:none" onchange="importData(event)" accept=".json">
+</div>
+
 <div class="pagination">  
     <button onclick="prevPage()">Previous</button>  
     <span>Page: <span id="currentPage">1</span> / <span id="totalPagesSpan">40</span></span>  
@@ -230,7 +238,18 @@
 </div>  <div id="folderTotalsSummary">  
     <h3>Folder Page Totals Summary</h3>  
     <div id="folderSummaryContent"></div>  
-</div>  <script>  
+</div> 
+
+<!-- Danger Zone: Folder Delete Section -->
+<div style="margin-top: 50px; padding: 20px; border: 2px solid #e74c3c; border-radius: 12px; background-color: #fdf2f2;">
+    <h4 style="color: #e74c3c; margin-top: 0;">⚠️ Danger Zone (Ehtiyat!)</h4>
+    <p style="font-size: 13px; color: #666;">Niche wala button dabane se maujooda (Current) Folder ke tamam 40 pages ka data hamesha ke liye delete ho jayega.</p>
+    <button onclick="deleteFullFolder()" style="background-color: #e74c3c; color: white; padding: 12px 25px; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 0 #c0392b;">
+        🚨 Delete Full Current Folder
+    </button>
+</div>
+
+<script>  
     const totalPages = 40;  
     let currentPage = 1;  
     let currentFolder = "Folder1";  
@@ -465,7 +484,11 @@ function toggleHazriBonus() {
     function updateFolderSummary() {  
     const summaryDiv = document.getElementById("folderSummaryContent");  
     summaryDiv.innerHTML = "";  
-      
+    
+    
+    let bonusAmount = 0; 
+    let bonus350Pages = 0;
+let bonus400Pages = 0;
     let grandTotal = 0;  
     let bonusPagesCount = 0;  
       
@@ -501,10 +524,14 @@ function toggleHazriBonus() {
               
             grandTotal += stitchTotal;  
               
-            // Count bonus if stitch total >= 350000  
-            if (stitchTotal >= 350000) {  
-                bonusPagesCount++;  
-            }  
+            // Bonus calculation per page
+if (stitchTotal >= 400000) {
+    bonusAmount += 200;
+    bonus400Pages++;
+} else if (stitchTotal >= 350000) {
+    bonusAmount += 150;
+    bonus350Pages++;
+}
               
             const pageDate = pageData.date || "No Date";
 let sundayMark = "";
@@ -537,10 +564,10 @@ summaryDiv.appendChild(div);
     grandTotalDiv.textContent = `📌 Total Stitch (Folder): ${grandTotal}`;  
     summaryDiv.appendChild(grandTotalDiv);  
       
-    // Rs calculation based on 100000 stitch = Rs 250  
-const ratePerStitch = 250 / 100000;  
+    // Rs calculation based on 100000 stitch = Rs 270  
+const ratePerStitch = 270 / 100000;  
 const basicEarning = grandTotal * ratePerStitch;  
-const bonusEarning = bonusPagesCount * 150;  
+const bonusEarning = bonusAmount;  
   
 let totalSundays = 0;
 
@@ -568,7 +595,14 @@ rupeeDiv.style.marginTop = "8px";
 rupeeDiv.style.padding = "5px";
 rupeeDiv.style.backgroundColor = "#e1f5fe"; // Light blue background taake saaf nazar aaye
 
-let bonusDetails = `Rs ${Math.round(basicEarning)} + Bonus Rs ${bonusEarning} for ${bonusPagesCount} page${bonusPagesCount > 1 ? 's' : ''} with ≥ 350,000 stitches`;  
+let bonusDetails = `Rs ${Math.round(basicEarning)} + Bonus Rs ${bonusEarning} `;
+
+if (bonus350Pages > 0) {
+    bonusDetails += ` | ${bonus350Pages} page(s) ≥350k`;
+}
+if (bonus400Pages > 0) {
+    bonusDetails += ` | ${bonus400Pages} page(s) ≥400k`;
+}  
   
 if (tenMillionBonus > 0) bonusDetails += ` + Rs 1000 for 10 million stitches`;  
 if (sundayBonus > 0) bonusDetails += ` + Rs ${sundayBonus} for ${totalSundays} Sunday(s)`;  
@@ -607,5 +641,103 @@ summaryDiv.appendChild(rupeeDiv);
                 .catch((err) => console.log("Service Worker Registration Failed:", err));  
         });  
     }  
+    
+    // --- DATA EXPORT FUNCTION ---
+function exportData() {
+    let allData = {};
+    // LocalStorage ka saara data akatha karna
+    for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        allData[key] = localStorage.getItem(key);
+    }
+
+    if (Object.keys(allData).length === 0) {
+        alert("Export karne ke liye koi data nahi mila!");
+        return;
+    }
+
+    // JSON file banana
+    const dataStr = JSON.stringify(allData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    
+    // Download link bana kar click karna
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `stitch_diary_backup_${new Date().toLocaleDateString()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert("✅ Data backup file download ho gayi hai!");
+}
+
+// --- DATA IMPORT FUNCTION ---
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Confirm mangna taake galti se data ud na jaye
+            const confirmAction = confirm("⚠️ CHE चेतावनी (Warning): \nImport karne se aapka maujooda (current) saara data delete ho jayega aur file wala data load ho jayega. \n\nKya aap jari rakhna chahte hain?");
+            
+            if (confirmAction) {
+                localStorage.clear(); // Purana data saaf karna
+                
+                // Naya data LocalStorage mein dalna
+                for (let key in importedData) {
+                    localStorage.setItem(key, importedData[key]);
+                }
+                
+                alert("✅ Data successfully import ho gaya hai! Page refresh ho raha hai...");
+                location.reload(); // App ko naye data ke sath restart karna
+            }
+        } catch (err) {
+            alert("❌ Galti: File sahi nahi hai ya data corrupt hai.");
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
+    // Reset file input taake dubara wahi file select ki ja sake
+    event.target.value = "";
+}
+
+// --- DELETE FULL FOLDER FUNCTION ---
+function deleteFullFolder() {
+    // Pehli Confirmation
+    let confirm1 = confirm("⚠️ WARNING!\nKya aap waqai poora '" + currentFolder + "' delete karna chahte hain?\nIs folder ke tamam 40 pages ka data khatam ho jayega.");
+    
+    if (confirm1) {
+        // Dusri FINAL Confirmation (Safety ke liye)
+        let confirm2 = confirm("❌ FINAL WARNING!\nData wapis nahi ayega. Kya aap waqai delete karna chahte hain?");
+        
+        if (confirm2) {
+            let keysToRemove = [];
+            
+            // LocalStorage mein se sirf is folder ki keys dhoondna
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                // Agar key FolderName se shuru ho rahi ho (e.g., Folder1_pageData_...)
+                if (key.startsWith(currentFolder + "_")) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            // Sab keys ko delete karna
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+            });
+
+            alert("✅ " + currentFolder + " ka sara data delete kar diya gaya hai.");
+            
+            // Page 1 load karna taake UI update ho jaye
+            loadPage(1); 
+        }
+    }
+}
 </script>  </body>  
   </html>
